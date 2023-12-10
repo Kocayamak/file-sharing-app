@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import AlertMsg from "./AlertMsg";
 import FilePreview from "./FilePreview";
 
-const UploadForm = () => {
+const UploadForm = ({uploadBtnClick}) => {
   const [file, setFile] = useState();
   const [errorMsg, setErrorMsg] = useState();
 
@@ -63,6 +63,7 @@ const UploadForm = () => {
       <button
         disabled={!file}
         className="p-2 bg-primary text-white w-[30%] rounded-full mt-5 disabled:bg-gray-500"
+        onClick={() => uploadBtnClick(file)}
       >
         Yükle
       </button>
