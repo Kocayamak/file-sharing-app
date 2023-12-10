@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import AlertMsg from "./AlertMsg";
 import FilePreview from "./FilePreview";
+import ProgressBar from "./ProgressBar";
 
-const UploadForm = ({uploadBtnClick}) => {
+const UploadForm = ({ uploadBtnClick, progress }) => {
   const [file, setFile] = useState();
   const [errorMsg, setErrorMsg] = useState();
 
@@ -59,14 +60,23 @@ const UploadForm = ({uploadBtnClick}) => {
       </div>
       {errorMsg ? <AlertMsg msg={errorMsg} /> : <></>}
 
-      {file ? <FilePreview file={file} removeFile={() => setFile(null)} /> : <></>}
-      <button
-        disabled={!file}
-        className="p-2 bg-primary text-white w-[30%] rounded-full mt-5 disabled:bg-gray-500"
-        onClick={() => uploadBtnClick(file)}
-      >
-        Yükle
-      </button>
+      {file ? (
+        <FilePreview file={file} removeFile={() => setFile(null)} />
+      ) : (
+        <></>
+      )}
+
+      {progress > 0 ? (
+        <ProgressBar progess={progress} />
+      ) : (
+        <button
+          disabled={!file}
+          className="p-2 bg-primary text-white w-[30%] rounded-full mt-5 disabled:bg-gray-500"
+          onClick={() => uploadBtnClick(file)}
+        >
+          Yükle
+        </button>
+      )}
     </div>
   );
 };

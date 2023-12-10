@@ -1,11 +1,17 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import UploadForm from "./_components/UploadForm";
 import { app } from "@/firebaseConfig";
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
 
 const Upload = () => {
+  const [progress, setProgress] = useState(0);
   const storage = getStorage(app);
 
   const uploadFile = (file) => {
@@ -13,19 +19,20 @@ const Upload = () => {
 
     const metaData = {
       contentType: file?.type,
-    }
+    };
 
     const uploadTask = uploadBytesResumable(fileRef, file, file?.type);
 
     uploadTask.on("state_changed", (snapshot) => {
       const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log("Upload is " + progress + "% done");
 
-      progress == 100 && getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-        console.log("File available at", downloadURL);
-      });
-    })
-  }
+      setProgress(progress);
+      progress == 100 &&
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log("File available at", downloadURL);
+        });
+    });
+  };
 
   return (
     <div className="p-5">
@@ -33,7 +40,7 @@ const Upload = () => {
         <strong className="text-primary">Dosya Yüklemeye</strong> başla ve{" "}
         <strong className="text-primary">Paylaş</strong>
       </h2>
-      <UploadForm uploadBtnClick={(file) => uploadFile(file)} />
+      <UploadForm uploadBtnClick={(file) => uploadFile(file)} progress={progress} />
     </div>
   );
 };
