@@ -9,10 +9,15 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
+import { useUser } from "@clerk/nextjs";
+import { generateRandomString } from "@/app/_utils/GenerateRandomString";
 
 const Upload = () => {
+  const { user } = useUser();
   const [progress, setProgress] = useState(0);
   const storage = getStorage(app);
+  const db = getFirestore(app);
 
   const uploadFile = (file) => {
     const fileRef = ref(storage, "files/" + file?.name);
@@ -30,7 +35,25 @@ const Upload = () => {
       progress == 100 &&
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           console.log("File available at", downloadURL);
+
+          saveInfo(file, downloadURL);
         });
+    });
+  };
+
+  const saveInfo = async (file, fileUrl) => {
+    const docId = generateRandomString();
+
+    await setDoc(doc(db, "files", docId), {
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+      fileUrl,
+      userEamil: user.primaryEmailAddress.emailAddress,
+      userName: user.fullName,
+      password: "",
+      id : docId,
+      shortUrl: process.env.NEXT_PUBLIC_BASE_URL + docId,
     });
   };
 
@@ -40,7 +63,10 @@ const Upload = () => {
         <strong className="text-primary">Dosya Yüklemeye</strong> başla ve{" "}
         <strong className="text-primary">Paylaş</strong>
       </h2>
-      <UploadForm uploadBtnClick={(file) => uploadFile(file)} progress={progress} />
+      <UploadForm
+        uploadBtnClick={(file) => uploadFile(file)}
+        progress={progress}
+      />
     </div>
   );
 };
