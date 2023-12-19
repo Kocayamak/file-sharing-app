@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import AlertMsg from "./AlertMsg";
 import FilePreview from "./FilePreview";
 import ProgressBar from "./ProgressBar";
+import Alert from "./Alert";
+
 
 const UploadForm = ({ uploadBtnClick, progress }) => {
   const [file, setFile] = useState();
@@ -77,6 +79,8 @@ const UploadForm = ({ uploadBtnClick, progress }) => {
           Yükle
         </button>
       )}
+
+      {progress == 100 ? <Alert /> : <></>}
     </div>
   );
 };
