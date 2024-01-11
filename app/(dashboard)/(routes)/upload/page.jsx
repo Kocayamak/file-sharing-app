@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UploadForm from "./_components/UploadForm";
 import { app } from "@/firebaseConfig";
 import {
@@ -12,19 +12,19 @@ import {
 import { doc, getFirestore, setDoc } from "firebase/firestore";
 import { useUser } from "@clerk/nextjs";
 import { generateRandomString } from "@/app/_utils/GenerateRandomString";
+import { useRouter } from "next/navigation";
 
 const Upload = () => {
   const { user } = useUser();
   const [progress, setProgress] = useState(0);
   const storage = getStorage(app);
   const db = getFirestore(app);
+  const router = useRouter();
+  const [uploadCompleted, setUploadCompleted] = useState(false);
+  const [fileDocId, setFileDocId] = useState("");
 
   const uploadFile = (file) => {
     const fileRef = ref(storage, "files/" + file?.name);
-
-    const metaData = {
-      contentType: file?.type,
-    };
 
     const uploadTask = uploadBytesResumable(fileRef, file, file?.type);
 
@@ -43,7 +43,8 @@ const Upload = () => {
 
   const saveInfo = async (file, fileUrl) => {
     const docId = generateRandomString();
-
+    setFileDocId(docId);
+  
     await setDoc(doc(db, "files", docId), {
       fileName: file?.name,
       fileSize: file?.size,
@@ -52,10 +53,27 @@ const Upload = () => {
       userEamil: user.primaryEmailAddress.emailAddress,
       userName: user.fullName,
       password: "",
-      id : docId,
+      id: docId,
       shortUrl: process.env.NEXT_PUBLIC_BASE_URL + docId,
     });
   };
+
+  useEffect(() => {
+    if(progress == 100){
+      setTimeout(() => {
+        setUploadCompleted(true);
+      }, 1000);
+    };
+  }, [progress == 100]);
+
+  useEffect(() => {
+    if (uploadCompleted) {
+      setUploadCompleted(false);
+      setTimeout(() => {
+        router.push(`/file-preview/${fileDocId}`);
+      }, 2000);
+    }
+  }, [uploadCompleted == true]);
 
   return (
     <div className="p-5">
